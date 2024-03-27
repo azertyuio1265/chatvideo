@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+   
+    <title> Omegle Clone </title>
+    
+    
+    <style>
+     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #header h1 {
+            margin: 0;
+        }
+
+        #videoContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+        }
+
+        #localVideo, #remoteVideo {
+            position: relative;
+            width: 50vw;
+            max-width: 500px;
+            height: calc(74vw * 0.47); /* 4:3 aspect ratio */
+            max-height: 600px;
+            margin: 0 45px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0, 1, 9, 8.2);
+        }
+
+        video {
+            width: 40%;
+            height: 40%;
+            object-fit: cover;
+        }
+
+        #videoControls {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+        }
+
+        button {
+            padding: 10px; /* Enlarged padding for icons */
+            font-size: 45px; /* Enlarged font size for icons */
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        #startButton {
+            background-color: #4CAF50; /* Green color for start button */
+            color: #fff;
+        }
+
+        #stopButton {
+            background-color: #ff6347; /* Red color for stop button */
+            color: #fff;
+        }
+
+        #skipButton {
+            background-color: #6495ed; /* Cornflower blue color for skip button */
+            color: #fff;
+        }
+    </style>
+   
+</head>
+<body>
+<div>  <h1> Chat Random ❤️ 😂 😎 😊 <div>  
+
+    
+    <div id="videoContainer">
+        <video id="localVideo" autoplay muted></video>
+        <video id="remoteVideo" autoplay></video>
+    </div>
+
+    <div id="videoControls">
+        
+           
+    <button id="startButton">Start chat</button>
+       
+        <button id="stopButton">Stop</button>
+      
+        <button id="skipButton">Skip</button>
+    </div>
+
+    <!-- Chat messages and controls here -->
+
+    <script>
+
+        window.onload = function() {
+        let localStream;
+        let remoteStream;
+        let localPeerConnection;
+        let remotePeerConnection;
+
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const skipButton = document.getElementById('skipButton');
+        const localVideo = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+
+        startButton.addEventListener('click', startBroadcast);
+        stopButton.addEventListener('click', stopBroadcast);
+        skipButton.addEventListener('click', skipRemoteVideo);
+
+        async function startBroadcast() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                localVideo.srcObject = localStream;
+
+                const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+                localPeerConnection = new RTCPeerConnection(configuration);
+                localStream.getTracks().forEach(track => localPeerConnection.addTrack(track, localStream));
+                localPeerConnection.onicecandidate = event => {
+                    if (event.candidate) {
+                        remotePeerConnection.addIceCandidate(event.candidate);
+                    }
+                };
+
+                remotePeerConnection = new RTCPeerConnection(configuration);
+                remotePeerConnection.ontrack = event => {
+                    remoteVideo.srcObject = event.streams[0];
+                    remoteStream = event.streams[0];
+                };
+                remotePeerConnection.onicecandidate = event => {
+                    if (event.candidate) {
+                        localPeerConnection.addIceCandidate(event.candidate);
+                    }
+                };
+
+                const offer = await localPeerConnection.createOffer();
+                await localPeerConnection.setLocalDescription(offer);
+                await remotePeerConnection.setRemoteDescription(offer);
+
+                const answer = await remotePeerConnection.createAnswer();
+                await remotePeerConnection.setLocalDescription(answer);
+                await localPeerConnection.setRemoteDescription(answer);
+            } catch (error) {
+                console.error('Error starting broadcast:', error);
+            }
+        }
+
+        function stopBroadcast() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            if (remoteStream) {
+                remoteStream.getTracks().forEach(track => track.stop());
+                remoteStream = null;
+            }
+            localVideo.srcObject = null;
+            remoteVideo.srcObject = null;
+            if (localPeerConnection) {
+                localPeerConnection.close();
+                localPeerConnection = null;
+            }
+            if (remotePeerConnection) {
+                remotePeerConnection.close();
+                remotePeerConnection = null;
+            }
+        }
+
+        function skipRemoteVideo() {
+            remoteVideo.srcObject = null;
+
+            if (remotePeerConnection) {
+                remotePeerConnection.close();
+                remotePeerConnection = null;
+            }
+
+            startRandomConnection();
+        }
+
+        function generateRandomUserId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
+        function startRandomConnection() {
+            const randomUserId = generateRandomUserId();
+            const remoteUserId = generateRandomUserId();
+
+            console.log('Starting connection between users:');
+            console.log('Local User ID:', randomUserId);
+            console.log('Remote User ID:', remoteUserId);
+        }
+    };
+        
+    </script>
+
+<div>                              
+
+<h1> advertise </h1>
+
+
+
+
+
+
+</div>
+  
